@@ -1,0 +1,16 @@
+{
+  "name": "pp3_spotifyapi",
+  "version": "1.0.0",
+  "description": "Welcome to my Spotify API Project for Project & Portfolio 3! Here you'll see my weekly updates on progression.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.3",
+    "express": "^4.19.2",
+    "nodejs": "^0.0.0"
+  }
+}
