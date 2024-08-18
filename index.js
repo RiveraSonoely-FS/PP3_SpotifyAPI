@@ -13,7 +13,6 @@ app.use(express.json());
 
 const { CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, JWT_SECRET, MONGO_URI } = process.env;
 
-// Connect to MongoDB
 mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const userSchema = new mongoose.Schema({
@@ -25,12 +24,10 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-// Spotify API URLs
 const AUTHORIZATION_BASE_URL = 'https://accounts.spotify.com/authorize';
 const TOKEN_URL = 'https://accounts.spotify.com/api/token';
 const SEARCH_URL = 'https://api.spotify.com/v1/search';
 
-// Middleware to check JWT
 const authenticateJWT = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
   if (token == null) return res.sendStatus(401);
