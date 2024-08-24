@@ -17,7 +17,6 @@ const App = () => {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [searchHistory, setSearchHistory] = useState([]);
 
   const fetchResults = async (type, query) => {
     if (!query.trim()) return;
@@ -41,7 +40,6 @@ const App = () => {
           data = [];
       }
       setResults(data);
-      setSearchHistory(prevHistory => [...new Set([query, ...prevHistory])]);
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('Failed to fetch results. Please try again.');
@@ -84,23 +82,6 @@ const App = () => {
           <button className="btn btn-secondary" onClick={handleClearSearch}>
             Clear Search
           </button>
-          <div className="dropdown">
-            <button className="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-              Recent Searches
-            </button>
-            <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              {searchHistory.map((historyItem, index) => (
-                <li key={index}>
-                  <button className="dropdown-item" onClick={() => {
-                    setQuery(historyItem);
-                    setSearchType('track');
-                  }}>
-                    {historyItem}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
 
         {loading && <div className="text-center"><div className="spinner-border" role="status"><span className="visually-hidden">Loading...</span></div></div>}
