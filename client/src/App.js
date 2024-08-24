@@ -1,73 +1,113 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Header from './Header';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const App = () => {
-  const [query, setQuery] = useState('');
-  const [tracks, setTracks] = useState([]);
-  const [error, setError] = useState('');
+const debounce = (func, delay) => {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), delay);
+  };
+};
 
-  const handleSearch = async () => {
-    if (!query) return;
-  
+const App = () => {
+  const [results, setResults] = useState([]);
+  const [searchType, setSearchType] = useState('track');
+  const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const fetchResults = async (type, query) => {
+    if (!query.trim()) return;
+
+    setLoading(true);
     try {
-      const response = await axios.get('/search', {
-        params: { q: query }
-      });
-      setTracks(response.data);
-      setError('');
-    } catch (err) {
-      console.error('Error fetching data:', err.response ? err.response.data : err.message);
-      setError('Error fetching data. Please try again.');
-      setTracks([]);
+      const response = await axios.get(`/search`, { params: { q: query, type } });
+      let data;
+      switch(type) {
+        case 'track':
+          data = response.data.tracks.items;
+          break;
+        case 'artist':
+          data = response.data.artists.items;
+          break;
+        case 'album':
+          data = response.data.albums.items;
+          break;
+        default:
+          data = [];
+      }
+      setResults(data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
     }
-  };   
+  };
+
+  const handleSearch = debounce((type, query) => {
+    fetchResults(type, query);
+  }, 300);
+
+  const handleSubmit = () => {
+    if (query.trim()) {
+      handleSearch(searchType, query);
+      setQuery('');
+    }
+  };
+
+  useEffect(() => {
+    if (query) {
+      handleSearch(searchType, query);
+    }
+  }, [query, searchType]);
 
   return (
-    <div className="container mt-5">
-      <h1 className="text-center">Music Search</h1>
-      <div className="row justify-content-center">
-        <div className="col-md-6">
-          <div className="input-group mb-3">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search for music..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <div className="input-group-append">
-              <button
-                className="btn btn-primary"
-                onClick={handleSearch}
-              >
-                Search
-              </button>
+    <div>
+      <Header onSearch={(type, query) => {
+        setSearchType(type);
+        setQuery(query);
+      }} />
+
+      <div className="container mt-3">
+        {loading && <p>Loading...</p>}
+        {results.length === 0 && !loading && <p>No results found</p>}
+        <div className="row">
+          {results.map((item, index) => (
+            <div key={index} className="col-md-4 mb-3">
+              {searchType === 'track' && item.album && item.album.images?.[0] && (
+                <a href={item.external_urls.spotify} target="_blank" rel="noopener noreferrer">
+                  <div className="card">
+                    <img src={item.album.images[0].url} className="card-img-top" alt={item.name} />
+                    <div className="card-body">
+                      <h5 className="card-title">{item.name}</h5>
+                      <p className="card-text">By {item.artists.map(artist => artist.name).join(', ')}</p>
+                    </div>
+                  </div>
+                </a>
+              )}
+              {searchType === 'artist' && item.images?.[0] && (
+                <a href={item.external_urls.spotify} target="_blank" rel="noopener noreferrer">
+                  <div className="card">
+                    <img src={item.images[0].url} className="card-img-top" alt={item.name} />
+                    <div className="card-body">
+                      <h5 className="card-title">{item.name}</h5>
+                    </div>
+                  </div>
+                </a>
+              )}
+              {searchType === 'album' && item.images?.[0] && (
+                <a href={item.external_urls.spotify} target="_blank" rel="noopener noreferrer">
+                  <div className="card">
+                    <img src={item.images[0].url} className="card-img-top" alt={item.name} />
+                    <div className="card-body">
+                      <h5 className="card-title">{item.name}</h5>
+                    </div>
+                  </div>
+                </a>
+              )}
             </div>
-          </div>
-          {error && <div className="alert alert-danger">{error}</div>}
-          <div className="list-group">
-            {tracks.map(track => (
-              <a
-                key={track.id}
-                href={track.external_urls.spotify}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="list-group-item list-group-item-action d-flex align-items-center"
-              >
-                <img
-                  src={track.album.images[0].url}
-                  alt={track.name}
-                  className="img-thumbnail mr-3"
-                  style={{ width: '50px', height: '50px' }}
-                />
-                <div>
-                  <strong>{track.name}</strong><br />
-                  {track.artists.map(artist => artist.name).join(', ')}
-                </div>
-              </a>
-            ))}
-          </div>
+          ))}
         </div>
       </div>
     </div>
