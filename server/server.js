@@ -9,39 +9,27 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-let accessToken = null;
-let tokenExpiry = null;
+app.get('/login', (req, res) => {
+  const scopes = 'user-read-private user-read-email';
+  const redirectUri = encodeURIComponent(process.env.REDIRECT_URI);
+  const clientId = process.env.CLIENT_ID;
 
-async function getAccessToken() {
-  const { CLIENT_ID, CLIENT_SECRET } = process.env;
-
-  if (accessToken && tokenExpiry > Date.now()) {
-    return accessToken;
-  }
-
-  try {
-    const authResponse = await axios.post('https://accounts.spotify.com/api/token', 
-      new URLSearchParams({ grant_type: 'client_credentials' }), 
-      { headers: { 
-          'Authorization': `Basic ${Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64')}`, 
-          'Content-Type': 'application/x-www-form-urlencoded' 
-        } 
-      }
-    );
-    accessToken = authResponse.data.access_token;
-    tokenExpiry = Date.now() + (authResponse.data.expires_in * 1000);
-    return accessToken;
-  } catch (error) {
-    console.error('Error fetching access token:', error.response ? error.response.data : error.message);
-    throw new Error('Unable to fetch access token');
-  }
-}
+  const authUrl = `https://accounts.spotify.com/authorize?response_type=token&client_id=${clientId}&scope=${scopes}&redirect_uri=${redirectUri}`;
+  
+  res.redirect(authUrl);
+});
 
 app.get('/search', async (req, res) => {
   const query = req.query.q;
-  const type = req.query.type || 'track';
+  const type = req.query.type;
 
-  if (!query) return res.status(400).json({ error: 'Query parameter is required' });
+  if (!query) {
+    return res.status(400).json({ error: 'Query parameter is required' });
+  }
+
+  if (!type || !['track', 'artist', 'album'].includes(type)) {
+    return res.status(400).json({ error: 'Invalid or missing type parameter' });
+  }
 
   try {
     const token = await getAccessToken();
@@ -51,10 +39,31 @@ app.get('/search', async (req, res) => {
     });
     res.json(response.data);
   } catch (error) {
-    console.error('Error searching data:', error.response ? error.response.data : error.message);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('Error searching:', error.response ? error.response.data : error.message);
+    res.status(error.response?.status || 500).json({ error: error.response?.data?.error?.message || 'Internal Server Error' });
   }
 });
+
+const generateAuthHeader = () => {
+  const { CLIENT_ID, CLIENT_SECRET } = process.env;
+  return `Basic ${Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64')}`;
+};
+
+const getAccessToken = async () => {
+  try {
+    const authResponse = await axios.post('https://accounts.spotify.com/api/token', 
+      new URLSearchParams({ grant_type: 'client_credentials' }), 
+      { headers: { 
+        'Authorization': generateAuthHeader(), 
+        'Content-Type': 'application/x-www-form-urlencoded' 
+      } 
+    });
+    return authResponse.data.access_token;
+  } catch (error) {
+    console.error('Error getting access token:', error.response ? error.response.data : error.message);
+    throw new Error('Unable to get access token');
+  }
+};
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
