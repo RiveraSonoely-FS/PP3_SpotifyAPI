@@ -6,7 +6,7 @@ const Header = ({ onSearch }) => {
   const [searchType, setSearchType] = useState('track');
 
   const handleSearch = () => {
-    if (!query) return;
+    if (!query.trim()) return;
     onSearch(searchType, query);
     setQuery('');
   };
@@ -20,6 +20,7 @@ const Header = ({ onSearch }) => {
             value={searchType}
             onChange={(e) => setSearchType(e.target.value)}
             className="form-select me-2"
+            aria-label="Search type"
           >
             <option value="track">Tracks</option>
             <option value="artist">Artists</option>
@@ -31,6 +32,7 @@ const Header = ({ onSearch }) => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="form-control me-2"
+            aria-label="Search query"
           />
           <button onClick={handleSearch} className="btn btn-success">
             Search

@@ -4,7 +4,6 @@ import axios from 'axios';
 import queryString from 'query-string';
 import _ from 'lodash';
 import Header from './Header';
-import Callback from './Callback';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const App = () => {
@@ -16,7 +15,21 @@ const App = () => {
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-    setToken(localStorage.getItem('token'));
+
+    console.log('Current URL:', window.location.href);
+
+    const { access_token } = queryString.parse(window.location.hash.replace('#', '?'));
+    console.log('Parsed Token:', access_token);
+
+    if (access_token) {
+      localStorage.setItem('token', access_token);
+      setToken(access_token);
+      window.history.replaceState({}, document.title, "/");
+    } else {
+      const storedToken = localStorage.getItem('token');
+      console.log('Stored Token:', storedToken);
+      setToken(storedToken);
+    }
   }, []);
 
   const fetchResults = async (type, query) => {
@@ -49,9 +62,9 @@ const App = () => {
     }
   };
 
-  const handleSearch = _.debounce((type, query) => {
+  const handleSearch = (type, query) => {
     fetchResults(type, query);
-  }, 300);
+  };
 
   const handleSubmit = () => {
     if (query.trim()) {
@@ -73,12 +86,12 @@ const App = () => {
             <a href="http://localhost:3001/login" className="btn btn-primary">Login with Spotify</a>
           </div>
         ) : <Navigate to="/" />} />
-        <Route path="/callback" element={<Callback />} />
         <Route path="/" element={token ? (
           <div>
             <Header onSearch={(type, query) => {
               setSearchType(type);
               setQuery(query);
+              handleSearch(type, query);
             }} />
 
             <div className="container mt-3">
@@ -136,14 +149,6 @@ const App = () => {
       </Routes>
     </Router>
   );
-};
-
-const debounce = (func, delay) => {
-  let timeoutId;
-  return (...args) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func(...args), delay);
-  };
 };
 
 export default App;

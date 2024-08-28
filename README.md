@@ -15,3 +15,6 @@ Week 2 - Begun frontend development and authorizing user access.
         -Created Week 2 SCRUM update, showcasing app so far.
 
 Week 3  - Began basic styling with header and searchbar.
+        - Advanced styling for results 
+        - Implemented user enhancements such as "Clear Search" button
+        - Created log in feature, saved token to local storage.
