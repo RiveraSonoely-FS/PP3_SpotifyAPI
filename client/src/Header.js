@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import musicLogo from './spotify.png';
 
 const Header = ({ onSearch }) => {
   const [query, setQuery] = useState('');
@@ -13,7 +14,7 @@ const Header = ({ onSearch }) => {
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter') {
-      event.preventDefault(); // Prevent any default behavior associated with Enter key
+      event.preventDefault();
       handleSearch();
     }
   };
@@ -21,7 +22,10 @@ const Header = ({ onSearch }) => {
   return (
     <header className="bg-dark text-white p-3">
       <div className="container d-flex justify-content-between align-items-center">
-        <h1 className="text-success">Music Search</h1>
+        <div className="d-flex align-items-center">
+          <img src={musicLogo} alt="Music Logo" style={{ width: '40px', height: 'auto' }} />
+          <h1 className="text-success" style={{margin: '10px', fontFamily: 'gotham'}}>Music Search</h1>
+        </div>
         <div className="d-flex align-items-center">
           <select
             value={searchType}
@@ -38,7 +42,7 @@ const Header = ({ onSearch }) => {
             placeholder="Search..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown} // Add this line
+            onKeyDown={handleKeyDown}
             className="form-control me-2"
             aria-label="Search query"
           />
