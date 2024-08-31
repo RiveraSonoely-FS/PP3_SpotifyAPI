@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import queryString from 'query-string';
-import _ from 'lodash';
 import Header from './Header';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -15,19 +14,13 @@ const App = () => {
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-
-    console.log('Current URL:', window.location.href);
-
     const { access_token } = queryString.parse(window.location.hash.replace('#', '?'));
-    console.log('Parsed Token:', access_token);
-
     if (access_token) {
       localStorage.setItem('token', access_token);
       setToken(access_token);
       window.history.replaceState({}, document.title, "/");
     } else {
       const storedToken = localStorage.getItem('token');
-      console.log('Stored Token:', storedToken);
       setToken(storedToken);
     }
   }, []);
@@ -55,21 +48,16 @@ const App = () => {
       }
       setResults(data);
     } catch (error) {
-      console.error('Error fetching data:', error);
       setError('Failed to fetch results. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSearch = (type, query) => {
-    fetchResults(type, query);
-  };
-
-  const handleSubmit = () => {
+  const handleSearch = (query) => {
     if (query.trim()) {
-      handleSearch(searchType, query);
-      setQuery('');
+      fetchResults(searchType, query);
+      setQuery(query);
     }
   };
 
@@ -88,11 +76,7 @@ const App = () => {
         ) : <Navigate to="/" />} />
         <Route path="/" element={token ? (
           <div>
-            <Header onSearch={(type, query) => {
-              setSearchType(type);
-              setQuery(query);
-              handleSearch(type, query);
-            }} />
+            <Header onSearch={(query) => handleSearch(query)} />
 
             <div className="container mt-3">
               <div className="d-flex justify-content-between mb-3">

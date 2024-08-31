@@ -11,6 +11,13 @@ const Header = ({ onSearch }) => {
     setQuery('');
   };
 
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault(); // Prevent any default behavior associated with Enter key
+      handleSearch();
+    }
+  };
+
   return (
     <header className="bg-dark text-white p-3">
       <div className="container d-flex justify-content-between align-items-center">
@@ -31,6 +38,7 @@ const Header = ({ onSearch }) => {
             placeholder="Search..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown} // Add this line
             className="form-control me-2"
             aria-label="Search query"
           />

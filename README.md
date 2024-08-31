@@ -18,3 +18,6 @@ Week 3  - Began basic styling with header and searchbar.
         - Advanced styling for results 
         - Implemented user enhancements such as "Clear Search" button
         - Created log in feature, saved token to local storage.
+
+Week 4  - Review and test Frontend and Backend functions.
+        - 
