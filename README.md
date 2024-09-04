@@ -20,4 +20,4 @@ Week 3  - Began basic styling with header and searchbar.
         - Created log in feature, saved token to local storage.
 
 Week 4  - Review and test Frontend and Backend functions.
-        - 
+        - Fix bugs - clean coding
